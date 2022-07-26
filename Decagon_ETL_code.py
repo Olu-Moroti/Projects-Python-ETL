@@ -134,15 +134,14 @@ queries = [query1, query2, query3]
 def  refresh_view(query):
     conn = psycopg2.connect(database=dbname, user=username, password=password)
     cur = conn.cursor()
-    view_name = query[10:15] # just random
-    cur.execute(query, (view_name,))
+    cur.execute(query)
     result = cur.fetchall()
     conn.close()
     return result
 
 print("Running the queries...")
 if __name__ == '__main__':
-    view_names = ['view1','view2', 'view3']
+    #view_names = ['view1','view2', 'view3']
     result = map(refresh_view, queries)
     result = [i for i in result]
     result1 = result[0]
