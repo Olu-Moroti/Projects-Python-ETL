@@ -1,6 +1,5 @@
 import requests
 import os
-from multiprocessing import Pool
 import pandas as pd
 from sqlalchemy import create_engine
 import psycopg2
@@ -14,12 +13,14 @@ URLs = ['https://github.com/annexare/Countries/blob/master/data/continents.json'
 
 URLs = [i.replace('github.com', 'raw.githubusercontent.com').replace('/blob', '') for i in URLs]
 
+print("Getting the json data...")
 # Extract data
 for url in URLs:
     filename = os.path.split(url)[1]
     response = requests.get(url)
     open(filename, 'wb').write(response.content)
 
+print("Reading the json files...")
 continents_df = pd.read_json('continents.json', orient='index')
 countries_2to3_df = pd.read_json('countries.2to3.json', orient='index')
 countries_3to2_df = pd.read_json('countries.3to2.json', orient='index')
@@ -32,6 +33,7 @@ countries_3to2_df = countries_3to2_df.reset_index(0)
 countries_df = countries_df.reset_index(0)
 languages_df = languages_df.reset_index(0)
 
+print("Connecting to the database...")
 # Login to database
 # print("Login to the localhost database.")
 dbname = 'postgres'
@@ -41,16 +43,22 @@ password = 'admin'
 engine = create_engine(f'postgresql://{username}:{password}@localhost:5432/{dbname}')
 
 # Load data to database
-try:
-    continents_df.to_sql('CONTINENTS', con=engine)
-    countries_2to3_df.to_sql('COUNTRIES2TO3', con=engine)
-    countries_3to2_df.to_sql('COUNTRIES3TO2', con=engine)
-    countries_df.to_sql('COUNTRIES', con=engine)
-    languages_df.to_sql('LANGUAGES', con=engine)
-except ValueError: # TABLE NAME is already in the database
-    pass
-else:
-    pass
+# try:
+print("Creating and loading the data to the database...")
+print("Loading CONTINENTS data...")
+continents_df.to_sql('CONTINENTS', con=engine, if_exists='replace', index=False)
+print("Loading COUNTRIES2TO3 data...")
+countries_2to3_df.to_sql('COUNTRIES2TO3', con=engine, if_exists='replace', index=False)
+print("Loading COUNTRIES3TO2 data...")
+countries_3to2_df.to_sql('COUNTRIES3TO2', con=engine, if_exists='replace', index=False)
+print("Loading COUNTRIES data...")
+countries_df.to_sql('COUNTRIES', con=engine, if_exists='replace', index=False)
+print("Loading LANGUAGES data...")
+languages_df.to_sql('LANGUAGES', con=engine, if_exists='replace', index=False)
+# except ValueError: # TABLE NAME is already in the database
+#     pass
+# else:
+#     pass
 
 query1 = """
 
@@ -132,10 +140,11 @@ def  refresh_view(query):
     conn.close()
     return result
 
+print("Running the queries...")
 if __name__ == '__main__':
-    p = Pool(processes=3)
     view_names = ['view1','view2', 'view3']
-    result = p.map(refresh_view, queries)
+    result = map(refresh_view, queries)
+    result = [i for i in result]
     result1 = result[0]
     result2 = result[1]
     result3 = result[2]
@@ -158,6 +167,9 @@ if __name__ == '__main__':
     for row in result3:
         print(row)
 
+print("\n\nCleaning up...")
 for file in os.listdir('.'):
     if file.endswith('.json'):
         os.remove(file)
+
+print("Done.")
