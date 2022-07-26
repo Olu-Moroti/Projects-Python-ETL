@@ -30,6 +30,5 @@ The remaining parts of the code is for some SQL report, as given in the tasks.
 ## Libraries used
 
 - Pandas
-- NumPy
 - Sqlalchemy
 - Psycopg2
