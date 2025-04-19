@@ -1,7 +1,7 @@
 # Task README
 
 ## Summary
-The code in the file **Decagon_ETL_code.py** gets a series of **json** files from a GitHub repository into a local PostgreSQL database, while also generating some reports.
+The code in the file **ETL_code.py** gets a series of **json** files from a GitHub repository into a local PostgreSQL database, while also generating some reports.
 
 ## Process
 The links of the json files were first gotten from GitHub directly, and then the links are copied into a list in the code.
